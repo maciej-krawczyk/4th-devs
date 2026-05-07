@@ -1,0 +1,23 @@
+{
+  "name": "4th-devs",
+  "version": "0.0.1",
+  "description": "4th-devs agent",
+  "homepage": "https://github.com/maciej-krawczyk/4th-devs#readme",
+  "bugs": {
+    "url": "https://github.com/maciej-krawczyk/4th-devs/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maciej-krawczyk/4th-devs.git"
+  },
+  "license": "ISC",
+  "author": "Maciej Krawczyk",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
+}

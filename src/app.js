@@ -1,6 +1,17 @@
 import 'dotenv/config';
-import { OPENROUTER_API_KEY, OPENROUTER_API_URL, MODEL } from './config.js';
+import path from 'path';
+import {
+    OPENROUTER_API_KEY,
+    OPENROUTER_API_URL,
+    MODEL,
+    LOGGING_ENABLED,
+    LOG_DIR_PATH
+} from './config.js';
+import fs from 'fs';
 import readline from 'readline';
+import { extractResponseText, formatTextWithAnsiCodes } from './helpers.js';
+
+let logFilePath = '';
 
 const chat = async (input, history = []) => {
     const response = await fetch(OPENROUTER_API_URL, {
@@ -23,7 +34,9 @@ const chat = async (input, history = []) => {
         throw new Error(errorMessage);
     }
 
-    console.log('Full API response:', JSON.stringify(data, null, 2));
+    if (LOGGING_ENABLED) {
+        fs.writeFileSync(logFilePath, JSON.stringify(data, null, 2));
+    }
 
     const text = extractResponseText(data);
 
@@ -45,6 +58,13 @@ const rl = readline.createInterface({
 const ask = (question) => new Promise((resolve) => rl.question(question, resolve));
 
 const main = async () => {
+    if (LOGGING_ENABLED) {
+        if (!fs.existsSync(LOG_DIR_PATH)) {
+            fs.mkdirSync(LOG_DIR_PATH);
+        }
+
+        logFilePath = path.join(process.cwd(), LOG_DIR_PATH, `${new Date().toISOString().replace(/[:.]/g, '-')}.txt`);
+    }
     while (true) {
         const input = await ask('Enter your message (or type "exit" to quit): ');
         if (input.toLowerCase() === 'exit') {
@@ -52,7 +72,9 @@ const main = async () => {
             break;
         }
         const response = await chat(input);
-        console.log(response);
+        console.log(formatTextWithAnsiCodes(response.text.reasoning, 'reasoning'));
+        console.log(formatTextWithAnsiCodes(response.text.messages, 'message'));
+        console.log(`Reasoning tokens used: ${response.reasoningTokens}`);
     }
 
     rl.close();
